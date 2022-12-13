@@ -11,13 +11,14 @@ import org.apache.spark.sql.types.DateType
 import org.apache.log4j.Level
 import org.apache.log4j.Logger
 import org.apache.spark.sql.SaveMode
+import org.apache.spark.sql.expressions.Window
 
-object Mens_Died_In_Crashes extends App {
-
-  Logger.getLogger("org").setLevel(Level.ERROR)
+object Two_Wheeler_Booked_For_Crashes extends App {
   
+  Logger.getLogger("org").setLevel(Level.ERROR)
+
   val sparkConf = new SparkConf()
-  sparkConf.set("spark.app.name", "mens died in crashes")
+  sparkConf.set("spark.app.name", "total number of two wheelers are booked for crashes")
   sparkConf.set("spark.master", "local[*]")
 
   val spark = SparkSession.builder()
@@ -30,21 +31,10 @@ object Mens_Died_In_Crashes extends App {
     .option("inferSchema", true)
     .option("path", "E:/BCG/Data/Primary_Person_use.csv")
     .load()
-
-  readerDf.printSchema()
-
-  print("data has :" + readerDf.rdd.getNumPartitions);
-  val readerReparDf = readerDf.repartition(8)
-  print("data has :" + readerReparDf.rdd.getNumPartitions);
-
-  val diedMaleDf = readerDf.where(col("DEATH_CNT") > 0 && col("PRSN_GNDR_ID") === "MALE")
-  diedMaleDf.select(count("*").as("total_number_crashes")).show()
-  
- //Another way
-  
-  //val anotherDiedMaleDf = readerDf.where(col("PRSN_DEATH_TIME").isNotNull && col("PRSN_GNDR_ID") === "MALE")
-  //anotherDiedMaleDf.select(count("*").as("total_number_crashes")).show()
-
-  spark.close()
-
+    
+   val  finalDF = readerDf.select(col("PRSN_HELMET_ID")).where(col("PRSN_HELMET_ID") !== "NOT APPLICABLE")
+   
+  println("total of two wheelers are booked for crashes : " + finalDF.count())
+   
+   spark.close()
 }
