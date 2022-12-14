@@ -56,10 +56,12 @@ object Count_Of_Distinct_Crash_IDs extends App {
 
   }
   val checkUDF = udf(checkF(_: String): Boolean)
+  
+  val damagedDF1 = noDamageDF.withColumn("Check", checkUDF(col("VEH_DMAG_SCL_2_ID")))
+  
+  val damagedDF2 = noDamageDF.withColumn("Check", checkUDF(col("VEH_DMAG_SCL_1_ID"))).union(damagedDF1).filter(col("Check") === true)
 
-  val damagedDF = noDamageDF.withColumn("Check", checkUDF(col("VEH_DMAG_SCL_1_ID"))).filter(col("Check") === true)
-
-  val insuranceDF = damagedDF.filter(col("FIN_RESP_TYPE_ID").isin("PROOF OF LIABILITY INSURANCE","LIABILITY INSURANCE POLICY","INSURANCE BINDER"))
+  val insuranceDF = damagedDF2.filter(col("FIN_RESP_TYPE_ID").isin("PROOF OF LIABILITY INSURANCE","LIABILITY INSURANCE POLICY","INSURANCE BINDER"))
                    .drop("Check")
 
   val finalDf = insuranceDF.select("CRASH_ID").distinct().count()
