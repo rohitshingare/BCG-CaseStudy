@@ -12,12 +12,12 @@ import org.apache.log4j.Logger
 import org.apache.spark.sql.SaveMode
 import org.apache.spark.sql.expressions.Window
 
-object Ethnic_User_Group extends  App{
-  
-   Logger.getLogger("org").setLevel(Level.ERROR)
+object Highest_Number_Of_Accident_Female_Envolved extends App {
+
+  Logger.getLogger("org").setLevel(Level.ERROR)
 
   val sparkConf = new SparkConf()
-  sparkConf.set("spark.app.name", " top ethnic user group of each unique body style ")
+  sparkConf.set("spark.app.name", "highest number of accidents in which females are involved")
   sparkConf.set("spark.master", "local[*]")
 
   val spark = SparkSession.builder()
@@ -28,23 +28,21 @@ object Ethnic_User_Group extends  App{
     .format("csv")
     .option("header", true)
     .option("inferSchema", true)
-    .option("path", "E:/BCG/Data/Units_use.csv")
+    .option("path", "E:/BCG/Data/Primary_Person_use.csv")
     .load()
-    
-   
-  val df1 = readerDf
-   .groupBy(col("VEH_BODY_STYL_ID"),col("VEH_MAKE_ID"))
-   .agg(count("VEH_BODY_STYL_ID").as("total"))
-   .sort(col("total").desc)
-   df1.show()
-          val df2 = df1.select(col("VEH_MAKE_ID")).distinct()
-          
-          df2.show()
-    //df1.show
-  // println("total of two wheelers are booked for crashes : " + df1.first())
-    
-    
-    
-    spark.close()
-    
+
+  val countDf = readerDf.where(!col("DRVR_LIC_STATE_ID").isin("NA", "Unknown"))
+    .groupBy("DRVR_LIC_STATE_ID", "PRSN_GNDR_ID")
+    .agg(count("*").as("total_count"))
+
+  val sortedDf = countDf.sort(col("total_count").desc)
+    .where(col("PRSN_GNDR_ID") === "FEMALE")
+    .drop("PRSN_GNDR_ID")
+    .drop("total_count")
+    .first()
+
+  // print(sortedDf.first())
+
+  spark.close()
+
 }

@@ -1,4 +1,5 @@
 package casestudy.rohit
+
 import org.apache.spark.SparkConf
 import org.apache.spark._
 import org.apache.spark.sql.SparkSession
@@ -12,7 +13,7 @@ import org.apache.log4j.Logger
 import org.apache.spark.sql.SaveMode
 import org.apache.spark.sql.expressions.Window
 
-object Highest_Number_Of_Accident_Female_Envolved extends App {
+object Largest_Number_Of_Injuries extends App {
 
   Logger.getLogger("org").setLevel(Level.ERROR)
 
@@ -28,14 +29,27 @@ object Highest_Number_Of_Accident_Female_Envolved extends App {
     .format("csv")
     .option("header", true)
     .option("inferSchema", true)
-    .option("path", "E:/BCG/Data/Primary_Person_use.csv")
+    .option("path", "E:/BCG/Data/Units_use.csv")
     .load()
 
-  val countDf = readerDf.groupBy("DRVR_LIC_STATE_ID", "PRSN_GNDR_ID")
-    .agg(count("*").as("total_count"))
+  def addM(total_injury: Int, total_death: Int) = {
+    total_injury + total_death
+  }
+  val totalUDF = udf(addM(_: Int, _: Int): Int)
 
-  val sortedDf = countDf.sort(col("total_count").desc)
-    .where(col("PRSN_GNDR_ID") === "FEMALE").show(1)
+  val df1 = readerDf.withColumn("total_count", totalUDF(col("TOT_INJRY_CNT"), col("DEATH_CNT")))
+
+  val df2 = df1.groupBy("VEH_MAKE_ID")
+    .agg(sum("total_count").as("total_sum"))
+    .sort(col("total_sum").desc)
+
+  val df3 = df2.withColumn("row_number", row_number().over(Window.orderBy(col("total_sum").desc)))
+
+  val df4 = df3.filter(col("row_number") >= 5 && col("row_number") <= 15)
+    .drop(col("row_number"))
+    .drop(col("total_sum"))
+
+  df4.show()
 
   spark.close()
 
