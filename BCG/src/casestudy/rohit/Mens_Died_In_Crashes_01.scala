@@ -15,7 +15,7 @@ import org.apache.spark.sql.SaveMode
 object Mens_Died_In_Crashes extends App {
 
   Logger.getLogger("org").setLevel(Level.ERROR)
-  
+
   val sparkConf = new SparkConf()
   sparkConf.set("spark.app.name", "mens died in crashes")
   sparkConf.set("spark.master", "local[*]")
@@ -37,12 +37,13 @@ object Mens_Died_In_Crashes extends App {
   val readerReparDf = readerDf.repartition(8)
   print("data has :" + readerReparDf.rdd.getNumPartitions);
 
-  val diedMaleDf = readerDf.where(col("DEATH_CNT") > 0 && col("PRSN_GNDR_ID") === "MALE")
+  val diedMaleDf = readerReparDf.where(col("DEATH_CNT") > 0 && col("PRSN_GNDR_ID") === "MALE")
+
   diedMaleDf.select(count("*").as("total_number_crashes")).show()
-  
- //Another way
-  
-  //val anotherDiedMaleDf = readerDf.where(col("PRSN_DEATH_TIME").isNotNull && col("PRSN_GNDR_ID") === "MALE")
+
+  //Another way
+
+  //val anotherDiedMaleDf = readerDf.where(col("PRSN_D EATH_TIME").isNotNull && col("PRSN_GNDR_ID") === "MALE")
   //anotherDiedMaleDf.select(count("*").as("total_number_crashes")).show()
 
   spark.close()

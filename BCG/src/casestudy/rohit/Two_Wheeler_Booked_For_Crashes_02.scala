@@ -14,7 +14,7 @@ import org.apache.spark.sql.SaveMode
 import org.apache.spark.sql.expressions.Window
 
 object Two_Wheeler_Booked_For_Crashes extends App {
-  
+
   Logger.getLogger("org").setLevel(Level.ERROR)
 
   val sparkConf = new SparkConf()
@@ -25,16 +25,31 @@ object Two_Wheeler_Booked_For_Crashes extends App {
     .config(sparkConf)
     .getOrCreate()
 
-  val readerDf = spark.read
+  val primaryPersonDf = spark.read
     .format("csv")
     .option("header", true)
     .option("inferSchema", true)
     .option("path", "E:/BCG/Data/Primary_Person_use.csv")
     .load()
-    
-   val  finalDF = readerDf.select(col("PRSN_HELMET_ID")).where(col("PRSN_HELMET_ID") !== "NOT APPLICABLE")
-   
-  println("total of two wheelers are booked for crashes : " + finalDF.count())
-   
-   spark.close()
+
+  val unitDf = spark.read
+    .format("csv")
+    .option("header", true)
+    .option("inferSchema", true)
+    .option("path", "E:/BCG/Data/Units_use.csv")
+    .load()
+
+  val notApplicableDF = primaryPersonDf.where(col("PRSN_HELMET_ID") !== "NOT APPLICABLE")
+
+  val motorDF = unitDf.where(col("VEH_BODY_STYL_ID").isin("MOTORCYCLE", "POLICE MOTORCYCLE"))
+
+  val joinCondition = motorDF.col("CRASH_ID") === notApplicableDF.col("CRASH_ID")
+
+  val joinType = "inner"
+
+  val JoinedDf = unitDf.join(primaryPersonDf, joinCondition, joinType).drop(unitDf.col("CRASH_ID"))
+
+  println("total of two wheelers are booked for crashes : " + JoinedDf.count())
+
+  spark.close()
 }
