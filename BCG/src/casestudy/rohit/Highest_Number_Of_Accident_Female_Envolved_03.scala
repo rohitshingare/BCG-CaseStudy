@@ -35,13 +35,14 @@ object Highest_Number_Of_Accident_Female_Envolved extends App {
     .groupBy("DRVR_LIC_STATE_ID", "PRSN_GNDR_ID")
     .agg(count("*").as("total_count"))
 
-  val sortedDf = countDf.sort(col("total_count").desc)
+  val sortedDf = countDf
     .where(col("PRSN_GNDR_ID") === "FEMALE")
+    .sort(col("total_count").desc)
     .drop("PRSN_GNDR_ID")
     .drop("total_count")
     .first()
 
-  // print(sortedDf.first())
+  //print(sortedDf.first())
 
   spark.close()
 
