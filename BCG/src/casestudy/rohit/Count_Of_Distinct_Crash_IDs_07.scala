@@ -14,7 +14,7 @@ import org.apache.spark.sql.SaveMode
 import org.apache.spark.sql.expressions.Window
 import org.apache.spark.sql.functions._
 import scala.collection.immutable.List
-
+// Analysis 7: Count of Distinct Crash IDs where No Damaged Property was observed and Damage Level (VEH_DMAG_SCL~) is above 4 and car avails Insurance 
 object Count_Of_Distinct_Crash_IDs extends App {
 
   Logger.getLogger("org").setLevel(Level.ERROR)
@@ -34,35 +34,25 @@ object Count_Of_Distinct_Crash_IDs extends App {
     .option("path", "E:/BCG/Data/Units_use.csv")
     .load()
 
-  val damagesDf = spark.read
-    .format("csv")
-    .option("header", true)
-    .option("inferSchema", true)
-    .option("path", "E:/BCG/Data/Damages_use.csv")
-    .load()
-
-  val joinCondition = unitDf.col("CRASH_ID") === damagesDf.col("CRASH_ID")
-
-  val joinType = "inner"
-
-  val JoinedDf = unitDf.join(broadcast(damagesDf), joinCondition, joinType).drop(unitDf.col("CRASH_ID"))
   
-  val noDamageDF = JoinedDf.where(col("DAMAGED_PROPERTY").isNull)
+ val noDamageDF = unitDf.where(col("VEH_DMAG_AREA_1_ID") === "NA" && col("VEH_DMAG_AREA_2_ID") === "NA" )
 
   def checkF(str: String) = {
     val field = str.split(" ")
 
-    if (field(0).startsWith("DAMAGED") && field(1).toInt >= 4) true else false
+    if (field(0).startsWith("DAMAGED") && field(1).toInt > 4) true else false
 
   }
   val checkUDF = udf(checkF(_: String): Boolean)
   
-  val damagedDF1 = noDamageDF.withColumn("Check", checkUDF(col("VEH_DMAG_SCL_2_ID")))
+  val sevDF1 = noDamageDF.withColumn("check", checkUDF(col("VEH_DMAG_SCL_1_ID")))
   
-  val damagedDF2 = noDamageDF.withColumn("Check", checkUDF(col("VEH_DMAG_SCL_1_ID"))).union(damagedDF1).filter(col("Check") === true)
+  val sevDF2 = noDamageDF.withColumn("check", checkUDF(col("VEH_DMAG_SCL_2_ID")))
+               .union(sevDF1)
+               .filter(col("check") === true)
 
-  val insuranceDF = damagedDF2.filter(col("FIN_RESP_TYPE_ID").isin("PROOF OF LIABILITY INSURANCE","LIABILITY INSURANCE POLICY","INSURANCE BINDER"))
-                   .drop("Check")
+  val insuranceDF = sevDF2.filter(col("FIN_RESP_TYPE_ID").isin("PROOF OF LIABILITY INSURANCE","LIABILITY INSURANCE POLICY","INSURANCE BINDER"))
+                   .drop("check")
 
   val finalDf = insuranceDF.select("CRASH_ID").distinct().count()
 

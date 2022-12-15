@@ -12,7 +12,7 @@ import org.apache.spark.sql.SaveMode
 import org.apache.spark.sql.expressions.Window
 
 object Zip_Codes_Highest_Number_Crashes extends App {
-
+// Analysis 6: Among the crashed cars, what are the Top 5 Zip Codes with highest number crashes with alcohols as the contributing factor to a crash (Use Driver Zip Code) 
   Logger.getLogger("org").setLevel(Level.ERROR)
 
   val sparkConf = new SparkConf()
@@ -43,15 +43,18 @@ object Zip_Codes_Highest_Number_Crashes extends App {
 
   val JoinedDf = unitDf.join(broadcast(primaryPersonDf), joinCondition, joinType).drop(unitDf.col("CRASH_ID"))
 
-  val carCrashesDF = JoinedDf.where(col("VEH_BODY_STYL_ID").isin("PASSENGER CAR, 4-DOOR", "PASSENGER CAR, 2-DOOR", "POLICE CAR/TRUCK"))
+  val carOnlyDF = JoinedDf.where(col("VEH_BODY_STYL_ID").isin("PASSENGER CAR, 4-DOOR", "PASSENGER CAR, 2-DOOR", "POLICE CAR/TRUCK"))
 
-  val topDF = carCrashesDF.where(col("PRSN_ALC_RSLT_ID") === "Positive" && col("DRVR_ZIP").isNotNull)
+  val topDF = carOnlyDF.where(col("PRSN_ALC_RSLT_ID") === "Positive" && col("DRVR_ZIP").isNotNull)
     .groupBy(col("DRVR_ZIP"))
     .agg(count("*").as("total_crashes"))
     .sort(col("total_crashes").desc)
 
   val top5DF = topDF.withColumn("row_number", row_number().over(Window.orderBy(col("total_crashes").desc)))
-    .where(col("row_number") <= 5).drop("row_number").drop("total_crashes").show
+              .where(col("row_number") <= 5)
+              .drop("row_number")
+              .drop("total_crashes")
+              .show
 
   spark.close()
 

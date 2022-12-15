@@ -13,7 +13,7 @@ import org.apache.log4j.Logger
 import org.apache.spark.sql.SaveMode
 
 object Mens_Died_In_Crashes extends App {
-
+   // Analytics 1: Find the number of crashes (accidents) in which number of persons killed are male? 
   Logger.getLogger("org").setLevel(Level.ERROR)
 
   val sparkConf = new SparkConf()

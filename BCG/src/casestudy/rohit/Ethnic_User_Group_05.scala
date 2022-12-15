@@ -13,7 +13,7 @@ import org.apache.spark.sql.SaveMode
 import org.apache.spark.sql.expressions.Window
 
 object Ethnic_User_Group extends App {
-
+// Analysis 5: For all the body styles involved in crashes, mention the top ethnic user group of each unique body style  
   Logger.getLogger("org").setLevel(Level.ERROR)
 
   val sparkConf = new SparkConf()

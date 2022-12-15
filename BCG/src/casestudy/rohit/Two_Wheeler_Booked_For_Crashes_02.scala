@@ -14,7 +14,7 @@ import org.apache.spark.sql.SaveMode
 import org.apache.spark.sql.expressions.Window
 
 object Two_Wheeler_Booked_For_Crashes extends App {
-
+  //Analysis 2: How many two wheelers are booked for crashes?  
   Logger.getLogger("org").setLevel(Level.ERROR)
 
   val sparkConf = new SparkConf()

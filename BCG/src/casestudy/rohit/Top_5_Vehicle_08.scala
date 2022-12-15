@@ -15,7 +15,7 @@ import org.apache.spark.SparkConf
 import scala.io.Source
 
 object Top_5_Vehicle_08 extends App {        
-  
+  // Analysis 8: Determine the Top 5 Vehicle Makes where drivers are charged with speeding related offences, has licensed Drivers, used top 10 used vehicle colours and has car licensed with the Top 25 states with highest number of offences (to be deduced from the data) 
    Logger.getLogger("org").setLevel(Level.ERROR)
 
   val sparkConf = new SparkConf()

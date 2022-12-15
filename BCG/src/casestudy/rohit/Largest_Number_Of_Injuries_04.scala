@@ -14,7 +14,7 @@ import org.apache.spark.sql.SaveMode
 import org.apache.spark.sql.expressions.Window
 
 object Largest_Number_Of_Injuries extends App {
-
+// Analysis 4: Which are the Top 5th to 15th VEH_MAKE_IDs that contribute to a largest number of injuries including death 
   Logger.getLogger("org").setLevel(Level.ERROR)
 
   val sparkConf = new SparkConf()
