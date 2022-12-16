@@ -66,7 +66,7 @@ object Top_5_Vehicle_08 extends App {
   .drop(top25StateDf.col("CRASH_ID"))
   .drop(filterSpeedDF.col("CRASH_ID"))
   
-val topMakeDf = JoinedDF.withColumn("count", count("VEH_MAKE_ID").over(Window.partitionBy("VEH_MAKE_ID")))
+  val topMakeDf = JoinedDF.withColumn("count", count("VEH_MAKE_ID").over(Window.partitionBy("VEH_MAKE_ID")))
   
   val top5MakeDf = topMakeDf.withColumn("rank",dense_rank().over(Window.orderBy(col("count").desc))).where(col("rank") <= 5)
  .drop("count").drop("rank")
