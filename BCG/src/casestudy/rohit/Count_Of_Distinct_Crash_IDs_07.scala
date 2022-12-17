@@ -59,7 +59,7 @@ object Count_Of_Distinct_Crash_IDs extends App {
 
   val sevDF1 = JoinedDf.withColumn("check", checkUDF(col("VEH_DMAG_SCL_1_ID")))
 
-  val sevDF2 = JoinedDf.withColumn("check", checkUDF(col("VEH_DMAG_SCL_2_ID")))
+  val sevDF2 = sevDF1.withColumn("check", checkUDF(col("VEH_DMAG_SCL_2_ID")))
     .union(sevDF1)
     .filter(col("check") === true)
 
